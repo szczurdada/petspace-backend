@@ -81,6 +81,7 @@ class authController {
       res.json(users);
     } catch (e) {
       console.log(e);
+      res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
     }
   }
 
@@ -101,7 +102,7 @@ class authController {
     }
   }
 
-  async onboarding(req, res) {
+  async registrationsSteps(req, res) {
     try {
       const { bio, gender, birthDate, country, city, breed } = req.body;
       const user = await User.findByIdAndUpdate(
@@ -113,7 +114,6 @@ class authController {
           country,
           city,
           breed,
-          onboardingCompleted: true,
         },
         { new: true },
       );
@@ -126,10 +126,11 @@ class authController {
 
   async updateUser(req, res) {
     try {
-      const { bio, gender, birthDate, country, city, breed } = req.body;
+      const { bio, gender, birthDate, country, city, breed, interests } =
+        req.body;
       const update = await User.findOneAndUpdate(
         { _id: req.user.id },
-        { bio, gender, birthDate, country, city, breed },
+        { bio, gender, birthDate, country, city, breed, interests },
         { new: true },
       );
       res.json(update);
