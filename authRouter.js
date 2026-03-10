@@ -21,6 +21,6 @@ router.post("/signin", controller.signin);
 router.get("/users", controller.getUsers);
 router.get("/user/:username", controller.getUser);
 router.put("/user/:username", authMiddleware, controller.updateUser);
-router.patch("/onboarding", authMiddleware, controller.onboarding);
+router.patch("/registrationsSteps", authMiddleware, controller.registrationsSteps);
 
 module.exports = router;

@@ -1,4 +1,4 @@
-const { Schema, model, mongoose } = require("mongoose");
+const { Schema, model } = require("mongoose");
 
 const User = new Schema({
   username: {
@@ -20,13 +20,20 @@ const User = new Schema({
   },
 
   avatar: { type: String, default: null },
-  bio: { type: String, default: null },
+  bio: { type: String, maxLength: 150, default: null },
   gender: { type: String, default: null },
   birthDate: { type: Date, default: null },
   country: { type: String, default: null },
   city: { type: String, default: null },
   breed: { type: String, default: null },
-  onboardingCompleted: { type: Boolean, default: false },
+  interests: {
+    favoriteToys: { type: String, maxLength: 300, default: null },
+    favoriteTreats: { type: String, maxLength: 300, default: null },
+    favoriteActivities: { type: String, maxLength: 300, default: null },
+    crimes: { type: String, maxLength: 300, default: null },
+    guiltyHabits: { type: String, maxLength: 300, default: null },
+    humans: { type: String, maxLength: 300, default: null },
+  },
 });
 
 module.exports = model("User", User);
