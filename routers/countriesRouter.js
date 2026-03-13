@@ -1,6 +1,6 @@
 const Router = require("express");
 const router = new Router();
-const Country = require("./models/Country");
+const Country = require("../models/Country");
 
 router.get("/", async (req, res) => {
   const countries = await Country.find({}, "country");

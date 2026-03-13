@@ -34,6 +34,8 @@ const User = new Schema({
     guiltyHabits: { type: String, maxLength: 300, default: null },
     humans: { type: String, maxLength: 300, default: null },
   },
+
+  photos: [{ type: Schema.Types.ObjectId, ref: "Photo" }],
 });
 
 module.exports = model("User", User);
