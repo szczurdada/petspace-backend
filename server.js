@@ -7,7 +7,7 @@ const app = express();
 const authRouter = require("./routers/authRouter");
 const breedsRouter = require("./routers/breedsRouter");
 const countriesRouter = require("./routers/countriesRouter");
-const uploadRouter = require("./routers/uploadRouter"); // если создала там
+const uploadRouter = require("./routers/uploadRouter");
 
 app.use(cors());
 app.use(express.json());
@@ -21,7 +21,7 @@ const start = async () => {
     await mongoose.connect(process.env.MONGO_URL);
     app.listen(PORT, () => console.log(`server started on ${PORT}`));
   } catch (e) {
-    console.log(e);
+    console.error(e);
   }
 };
 
