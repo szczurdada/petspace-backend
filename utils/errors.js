@@ -16,6 +16,8 @@ const ERROR_CODES = {
 
   INSUFFICIENT_BALANCE: 1400,
   ORDER_ALREADY_PROCESSED: 1401,
+
+  UPLOAD_FAILED: 1500,
 };
 
 const errorResponse = (errorName) => ({
