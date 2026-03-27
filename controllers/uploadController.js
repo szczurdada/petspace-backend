@@ -39,6 +39,7 @@ const uploadPhoto = async (req, res) => {
         url: result.secure_url,
         public_id: result.public_id,
         _id: photo._id,
+        createdAt: photo.createdAt,
       },
     });
   } catch (err) {

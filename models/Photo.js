@@ -10,7 +10,7 @@ const Photo = new Schema({
     maxLength: 300,
     default: null,
   },
-  uploadedAt: {
+  createdAt: {
     type: Date,
     default: Date.now,
   },
