@@ -41,7 +41,6 @@ class authController {
         },
       });
     } catch (e) {
-      console.log(e);
       res.status(400).json({ message: "Registration error" });
     }
   }
@@ -70,7 +69,6 @@ class authController {
         },
       });
     } catch (e) {
-      console.log(e);
       res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
     }
   }
@@ -80,7 +78,6 @@ class authController {
       const users = await User.find();
       res.json(users);
     } catch (e) {
-      console.log(e);
       res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
     }
   }
@@ -88,16 +85,14 @@ class authController {
   async getUser(req, res) {
     try {
       const { username } = req.params;
-      const user = await User.findOne({ username }).select({
-        password: 0,
-        email: 0,
-      }).populate("photos");
+      const user = await User.findOne({ username })
+        .select({ password: 0, email: 0 })
+        .populate("photos");
       if (!user) {
         return res.status(404).json(errorResponse("USER_NOT_FOUND"));
       }
       res.json(user);
     } catch (e) {
-      console.log(e);
       res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
     }
   }
@@ -119,7 +114,6 @@ class authController {
       );
       res.json(user);
     } catch (e) {
-      console.log(e);
       res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
     }
   }
@@ -135,7 +129,6 @@ class authController {
       );
       res.json(update);
     } catch (e) {
-      console.log(e);
       res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
     }
   }
