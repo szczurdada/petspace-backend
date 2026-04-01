@@ -7,14 +7,14 @@ const app = express();
 const authRouter = require("./routers/authRouter");
 const breedsRouter = require("./routers/breedsRouter");
 const countriesRouter = require("./routers/countriesRouter");
-const uploadRouter = require("./routers/uploadRouter");
+const photoRouter = require("./routers/photoRouter");
 
 app.use(cors());
 app.use(express.json());
 app.use(authRouter);
 app.use("/breeds", breedsRouter);
 app.use("/countries", countriesRouter);
-app.use("/api", uploadRouter);
+app.use("/api", photoRouter);
 
 const start = async () => {
   try {

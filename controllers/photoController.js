@@ -21,7 +21,7 @@ const uploadAvatar = async (req, res) => {
     res.status(200).json({
       data: { url: result.secure_url, public_id: result.public_id },
     });
-  } catch (err) {
+  } catch (e) {
     res.status(500).json(errorResponse("UPLOAD_FAILED"));
   }
 };
@@ -42,9 +42,29 @@ const uploadPhoto = async (req, res) => {
         createdAt: photo.createdAt,
       },
     });
-  } catch (err) {
+  } catch (e) {
     res.status(500).json(errorResponse("UPLOAD_FAILED"));
   }
 };
 
-module.exports = { uploadAvatar, uploadPhoto };
+const deletePhoto = async (req, res) => {
+  try {
+    const photo = await Photo.findOne({
+      _id: req.params.id,
+      user: req.user.id,
+    });
+
+    if (!photo) {
+      return res.status(404).json(errorResponse("PHOTO_NOT_FOUND"));
+    }
+    await Photo.findByIdAndDelete(req.params.id);
+    await User.findByIdAndUpdate(req.user.id, { $pull: { photos: photo._id } });
+    await cloudinary.uploader.destroy(photo.publicId);
+
+    res.status(200).json({ data: { success: true } });
+  } catch (e) {
+    res.status(500).json(errorResponse("DELETE_FAILED"));
+  }
+};
+
+module.exports = { uploadAvatar, uploadPhoto, deletePhoto };
