@@ -17,9 +17,15 @@ const uploadToCloudinary = (buffer, folder) => {
 const uploadAvatar = async (req, res) => {
   try {
     const result = await uploadToCloudinary(req.file.buffer, "my-app/avatars");
-    await User.findByIdAndUpdate(req.user.id, { avatar: result.public_id });
+    
+    const optimizedUrl = result.secure_url.replace(
+      "/upload/",
+      "/upload/w_256,h_256,c_fill,g_face/"
+    );
+
+    await User.findByIdAndUpdate(req.user.id, { avatar: optimizedUrl });
     res.status(200).json({
-      data: { url: result.secure_url, public_id: result.public_id },
+      data: { url: optimizedUrl, public_id: result.public_id },
     });
   } catch (e) {
     res.status(500).json(errorResponse("UPLOAD_FAILED"));
