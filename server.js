@@ -14,7 +14,7 @@ app.use(express.json());
 app.use(authRouter);
 app.use("/breeds", breedsRouter);
 app.use("/countries", countriesRouter);
-app.use("/api", photoRouter);
+app.use("/api/upload", photoRouter);
 
 const start = async () => {
   try {
