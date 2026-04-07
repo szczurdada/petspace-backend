@@ -21,7 +21,7 @@ const Photo = new Schema(
       required: true,
     },
   },
-  { toJSON: { virtuals: true } }
+  { toJSON: { virtuals: true } },
 );
 
 module.exports = model("Photo", Photo);
