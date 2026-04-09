@@ -1,4 +1,5 @@
 const User = require("../models/User");
+const Postwall = require("../models/Postwall");
 const bcrypt = require("bcryptjs");
 const { validationResult } = require("express-validator");
 const jwt = require("jsonwebtoken");
@@ -31,6 +32,7 @@ class authController {
       const hashPassword = bcrypt.hashSync(password, 5);
       const user = new User({ name, username, password: hashPassword, email });
       await user.save();
+      await Postwall.create({ user: user._id });
       const token = generateAccessToken(user._id);
       return res.json({
         token,

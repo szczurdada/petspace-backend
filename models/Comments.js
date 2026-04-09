@@ -1,4 +1,5 @@
-const { Schema, model, mongoose } = require("mongoose");
+const mongoose = require("mongoose");
+const { Schema, model } = require("mongoose");
 
 const Comments = {
   content: { type: String, trim: true },
