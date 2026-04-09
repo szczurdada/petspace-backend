@@ -8,6 +8,8 @@ const authRouter = require("./routers/authRouter");
 const breedsRouter = require("./routers/breedsRouter");
 const countriesRouter = require("./routers/countriesRouter");
 const photoRouter = require("./routers/photoRouter");
+const postRouter = require("./routers/postRouter");
+const postwallRouter = require("./routers/postwallRouter");
 
 app.use(cors());
 app.use(express.json());
@@ -15,6 +17,8 @@ app.use(authRouter);
 app.use("/breeds", breedsRouter);
 app.use("/countries", countriesRouter);
 app.use("/api/upload", photoRouter);
+app.use("/posts", postRouter);
+app.use("/postwall", postwallRouter);
 
 const start = async () => {
   try {

@@ -20,6 +20,9 @@ const ERROR_CODES = {
 
   UPLOAD_FAILED: 1500,
   DELETE_FAILED: 1501,
+
+  INTERNAL_SERVER_ERROR: 1600,
+  MISSING_REQUIRED_FIELDS: 1601,
 };
 
 const errorResponse = (errorName) => ({
