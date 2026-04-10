@@ -23,7 +23,7 @@ const getPosts = async (req, res) => {
     const { postwallId } = req.params;
     const posts = await Post.find({ postwall: postwallId })
       .populate("user")
-      .sort({ timestamp: -1 });
+      .sort({ createdAt: -1 });
     res.json(posts);
   } catch (e) {
     res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
