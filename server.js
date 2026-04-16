@@ -10,6 +10,7 @@ const countriesRouter = require("./routers/countriesRouter");
 const photoRouter = require("./routers/photoRouter");
 const postRouter = require("./routers/postRouter");
 const postwallRouter = require("./routers/postwallRouter");
+const commentRouter = require("./routers/commentRouter");
 
 app.use(cors());
 app.use(express.json());
@@ -19,6 +20,7 @@ app.use("/countries", countriesRouter);
 app.use("/api/upload", photoRouter);
 app.use("/posts", postRouter);
 app.use("/postwall", postwallRouter);
+app.use("/comments", commentRouter);
 
 const start = async () => {
   try {

@@ -1,8 +1,9 @@
 const mongoose = require("mongoose");
 const { Schema, model } = require("mongoose");
 
-const Reposts = new Schema(
+const Comment = new Schema(
   {
+    content: { type: String, trim: true, required: true },
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -11,10 +12,10 @@ const Reposts = new Schema(
     post: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Post",
-      required: true,
     },
+    photo: { type: mongoose.Schema.Types.ObjectId, ref: "Photo" },
   },
-  { timestamps: true },
+  { toJSON: { virtuals: true }, timestamps: true },
 );
 
-module.exports = model("Reposts", Reposts);
+module.exports = model("Comment", Comment);

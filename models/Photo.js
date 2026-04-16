@@ -11,17 +11,13 @@ const Photo = new Schema(
       maxLength: 300,
       default: null,
     },
-    createdAt: {
-      type: Date,
-      default: Date.now,
-    },
     user: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
   },
-  { toJSON: { virtuals: true } },
+  { toJSON: { virtuals: true }, timestamps: true },
 );
 
 module.exports = model("Photo", Photo);
