@@ -7,10 +7,6 @@ const Post = new Schema(
       type: String,
       required: true,
     },
-    createdAt: {
-      type: Date,
-      default: Date.now,
-    },
     postwall: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Postwall",
@@ -22,7 +18,7 @@ const Post = new Schema(
       required: true,
     },
   },
-  { toJSON: { virtuals: true } },
+  { toJSON: { virtuals: true }, timestamps: true },
 );
 
 module.exports = model("Post", Post);
