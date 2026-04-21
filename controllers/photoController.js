@@ -17,15 +17,31 @@ const uploadToCloudinary = (buffer, folder) => {
 const uploadAvatar = async (req, res) => {
   try {
     const result = await uploadToCloudinary(req.file.buffer, "my-app/avatars");
-    
+
     const optimizedUrl = result.secure_url.replace(
       "/upload/",
-      "/upload/w_256,h_256,c_fill,g_face/"
+      "/upload/w_256,h_256,c_fill,g_face/",
     );
 
-    await User.findByIdAndUpdate(req.user.id, { avatar: optimizedUrl });
+    const photo = await Photo.create({
+      publicId: result.public_id,
+      user: req.user.id,
+    });
+
+    await User.findByIdAndUpdate(req.user.id, {
+      avatar: optimizedUrl,
+      $push: {
+        avatarPhotos: photo._id,
+        photos: photo._id,
+      },
+    });
+
     res.status(200).json({
-      data: { url: optimizedUrl, public_id: result.public_id },
+      data: {
+        url: optimizedUrl,
+        public_id: result.public_id,
+        photoId: photo._id,
+      },
     });
   } catch (e) {
     res.status(500).json(errorResponse("UPLOAD_FAILED"));
@@ -73,4 +89,28 @@ const deletePhoto = async (req, res) => {
   }
 };
 
-module.exports = { uploadAvatar, uploadPhoto, deletePhoto };
+const deleteAvatar = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+
+    if (user.avatarPhotos?.length) {
+      const lastPhoto = await Photo.findById(
+        user.avatarPhotos[user.avatarPhotos.length - 1],
+      );
+      if (lastPhoto) {
+        await cloudinary.uploader.destroy(lastPhoto.publicId);
+        await Photo.findByIdAndDelete(lastPhoto._id);
+        await User.findByIdAndUpdate(req.user.id, {
+          $pull: { avatarPhotos: lastPhoto._id, photos: lastPhoto._id },
+        });
+      }
+    }
+
+    await User.findByIdAndUpdate(req.user.id, { avatar: null });
+    res.status(200).json({ data: { success: true } });
+  } catch (e) {
+    res.status(500).json(errorResponse("DELETE_FAILED"));
+  }
+};
+
+module.exports = { uploadAvatar, uploadPhoto, deletePhoto, deleteAvatar };

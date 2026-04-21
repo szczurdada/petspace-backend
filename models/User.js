@@ -20,10 +20,11 @@ const User = new Schema({
   },
 
   avatar: { type: String, default: null },
+  avatarPhotos: [{ type: Schema.Types.ObjectId, ref: "Photo", default: null }],
   bio: { type: String, maxLength: 150, default: null },
   gender: { type: String, default: null },
   birthDate: { type: Date, default: null },
-  country: { type: String, default: null },
+  country: { type: String, default: null }, 
   city: { type: String, default: null },
   breed: { type: String, default: null },
   interests: {

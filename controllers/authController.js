@@ -89,7 +89,8 @@ class authController {
       const { username } = req.params;
       const user = await User.findOne({ username })
         .select({ password: 0, email: 0 })
-        .populate("photos");
+        .populate("photos")
+        .populate("avatarPhotos");
       if (!user) {
         return res.status(404).json(errorResponse("USER_NOT_FOUND"));
       }
