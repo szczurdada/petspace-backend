@@ -4,11 +4,13 @@ const upload = require("../middleware/multer");
 const authMiddleware = require("../middleware/middleware");
 const {
   uploadAvatar,
+  deleteAvatar,
   uploadPhoto,
   deletePhoto,
 } = require("../controllers/PhotoController");
 
 router.post("/avatar", authMiddleware, upload.single("image"), uploadAvatar);
+router.delete("/avatar", authMiddleware, deleteAvatar);
 router.post("/photo", authMiddleware, upload.single("image"), uploadPhoto);
 router.delete("/photo/:id", authMiddleware, deletePhoto);
 
