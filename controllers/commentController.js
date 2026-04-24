@@ -34,7 +34,7 @@ const getComments = async (req, res) => {
     if (postId) {
     comments = await Comment.find({ post: postId })
       .sort({
-        createdAt: +1,
+        createdAt: 1,
       })
       .populate("user", "name avatar");}
       else { 
