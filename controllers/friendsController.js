@@ -126,7 +126,11 @@ const addFriend = async (req, res) => {
       to: friend._id,
     });
 
+    follow(user, friend);
+
     await friendRequest.save();
+    await user.save();
+    await friend.save();
     await notify({ recipient: friend._id, user: user._id, type: "friendRequest" });
 
     res.json({ message: "Friend request sent" });
@@ -227,6 +231,15 @@ const rejectFriendRequest = async (req, res) => {
 
     if (friendRequest.to.toString() !== req.user.id) {
       return res.status(403).json(errorResponse("ACCESS_DENIED"));
+    }
+
+    const sender = await User.findById(friendRequest.from);
+    const receiver = await User.findById(friendRequest.to);
+
+    if (sender && receiver) {
+      unfollow(sender, receiver);
+      await sender.save();
+      await receiver.save();
     }
 
     friendRequest.status = "rejected";
