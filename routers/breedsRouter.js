@@ -5,7 +5,7 @@ const { errorResponse } = require("../utils/errors");
 
 router.get("/", async (req, res) => {
   try {
-    const breeds = await Breed.find({}, "name");
+    const breeds = await Breed.find({}, "name").sort({ name: 1 });
     res.json(breeds.map((b) => b.name));
   } catch (err) {
     console.error(err);
