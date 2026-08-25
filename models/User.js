@@ -38,6 +38,7 @@ const User = new Schema(
     },
     isOnline: { type: Boolean, default: false },
     lastSeen: { type: Date, default: null },
+    registrationCompleted: { type: Boolean, default: false },
 
     photos: [{ type: Schema.Types.ObjectId, ref: "Photo" }],
     friends: [{ type: Schema.Types.ObjectId, ref: "User" }],

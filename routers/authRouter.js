@@ -3,7 +3,6 @@ const router = new Router();
 const {
   signup,
   signin,
-  getUsers,
   getUser,
   updateUser,
   registrationsSteps,
@@ -28,7 +27,6 @@ router.post(
 );
 
 router.post("/signin", signin);
-router.get("/users", getUsers);
 router.get("/user/:username", optionalAuthMiddleware, getUser);
 router.get("/me", authMiddleware, getMe);
 router.put("/user/:username", authMiddleware, updateUser);

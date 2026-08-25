@@ -37,7 +37,7 @@ const signup = async (req, res) => {
       user: {
         id: user.id,
         username: user.username,
-        onboardingCompleted: false,
+        registrationCompleted: false,
       },
     });
   } catch (err) {
@@ -62,7 +62,7 @@ const signin = async (req, res) => {
       user: {
         id: user.id,
         username: user.username,
-        onboardingCompleted: user.onboardingCompleted,
+        registrationCompleted: user.registrationCompleted,
       },
     });
   } catch (err) {
@@ -78,15 +78,6 @@ const signout = async (req, res) => {
       lastSeen: new Date(),
     });
     res.json({ success: true });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
-  }
-};
-
-const getUsers = async (req, res) => {
-  try {
-    res.json(await User.find().select({ password: 0, email: 0 }));
   } catch (err) {
     console.error(err);
     res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
@@ -110,7 +101,7 @@ const getUser = async (req, res) => {
     if (!user) return res.status(404).json(errorResponse("USER_NOT_FOUND"));
 
     const userId = req.user?.id;
-    const obj = user.toObject();
+    const obj = user.toObject({ virtuals: true });
     res.json({
       ...obj,
       photos: obj.photos.map((photo) => withLiked(photo, userId)),
@@ -147,10 +138,11 @@ const getMe = async (req, res) => {
 
 const registrationsSteps = async (req, res) => {
   try {
-    const { bio, sex, birthDate, country, city, breed } = req.body;
+    const { bio, sex, birthDate, country, city, breed, registrationCompleted } =
+      req.body;
     const user = await User.findByIdAndUpdate(
       req.user.id,
-      { bio, sex, birthDate, country, city, breed },
+      { bio, sex, birthDate, country, city, breed, registrationCompleted },
       { new: true },
     );
     res.json(user);
@@ -201,7 +193,6 @@ module.exports = {
   signup,
   signin,
   signout,
-  getUsers,
   getUser,
   getMe,
   registrationsSteps,
