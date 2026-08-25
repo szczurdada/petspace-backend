@@ -5,7 +5,7 @@ const { errorResponse } = require("../utils/errors");
 
 router.get("/", async (req, res) => {
   try {
-    const countries = await Country.find({}, "country");
+    const countries = await Country.find({}, "country").sort({ country: 1 });
     res.json(countries.map((c) => c.country));
   } catch (err) {
     console.error(err);
@@ -16,7 +16,8 @@ router.get("/", async (req, res) => {
 router.get("/cities", async (req, res) => {
   try {
     const found = await Country.findOne({ country: req.query.country });
-    res.json(found ? found.cities : []);
+    const cities = found ? [...found.cities].sort() : [];
+    res.json(cities);
   } catch (err) {
     console.error(err);
     res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
