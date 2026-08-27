@@ -2,7 +2,17 @@ const User = require("../models/User");
 const { errorResponse } = require("../utils/errors");
 const { findUsersByUsername } = require("../utils/findUsers");
 
-const PUBLIC_FIELDS = "username name avatar isOnline lastSeen";
+const PUBLIC_FIELDS = "username name avatar isOnline lastSeen followers";
+
+const withFollowersCount = (user) => ({
+  id: user.id,
+  username: user.username,
+  name: user.name,
+  avatar: user.avatar,
+  isOnline: user.isOnline,
+  lastSeen: user.lastSeen,
+  followersCount: user.followers.length,
+});
 
 const getFollowers = async (req, res) => {
   try {
@@ -11,7 +21,7 @@ const getFollowers = async (req, res) => {
     }).populate("followers", PUBLIC_FIELDS);
 
     if (!user) return res.status(404).json(errorResponse("USER_NOT_FOUND"));
-    res.json(user.followers);
+    res.json(user.followers.map(withFollowersCount));
   } catch (err) {
     console.error(err);
     res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
@@ -25,7 +35,7 @@ const getFollowing = async (req, res) => {
     }).populate("following", PUBLIC_FIELDS);
 
     if (!user) return res.status(404).json(errorResponse("USER_NOT_FOUND"));
-    res.json(user.following);
+    res.json(user.following.map(withFollowersCount));
   } catch (err) {
     console.error(err);
     res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
