@@ -6,6 +6,7 @@ const commentController = require("../controllers/commentController");
 router.post("/", authMiddleware, commentController.createComment);
 router.get("/postwall/:postId", optionalAuthMiddleware, commentController.getComments);
 router.get("/photo/:photoId", optionalAuthMiddleware, commentController.getComments);
+router.put("/:commentId", authMiddleware, commentController.updateComment);
 router.delete("/:commentId", authMiddleware, commentController.deleteComment);
 
 module.exports = router;
