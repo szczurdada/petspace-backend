@@ -10,6 +10,7 @@ const photoRouter = require("./routers/photoRouter");
 const postRouter = require("./routers/postRouter");
 const postwallRouter = require("./routers/postwallRouter");
 const commentRouter = require("./routers/commentRouter");
+const repostRouter = require("./routers/repostRouter");
 const friendsRouter = require("./routers/friendsRouter");
 const familyRouter = require("./routers/familyRouter");
 const followsRouter = require("./routers/followsRouter");
@@ -37,6 +38,7 @@ app.use("/api/upload", photoRouter);
 app.use("/posts", postRouter);
 app.use("/postwall", postwallRouter);
 app.use("/comments", commentRouter);
+app.use("/reposts", repostRouter);
 app.use("/friends", friendsRouter);
 app.use("/family", familyRouter);
 app.use(followsRouter);
@@ -52,13 +54,23 @@ app.use((err, req, res, next) => {
 });
 
 const start = async () => {
+  if (!process.env.MONGO_URL) {
+    console.error("MONGO_URL is not set in .env");
+    process.exit(1);
+  }
+  if (!process.env.PORT) {
+    console.error("PORT is not set in .env");
+    process.exit(1);
+  }
+
   try {
     await mongoose.connect(process.env.MONGO_URL);
     http.listen(process.env.PORT, () =>
       console.log(`Server started on port ${process.env.PORT}`),
     );
   } catch (e) {
-    console.error(e);
+    console.error("Failed to connect to MongoDB, server not started:", e);
+    process.exit(1);
   }
 };
 

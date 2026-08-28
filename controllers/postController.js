@@ -1,29 +1,47 @@
 const User = require("../models/User");
 const Post = require("../models/Post");
+const Postwall = require("../models/Postwall");
+const Repost = require("../models/Repost");
 const { errorResponse } = require("../utils/errors");
+const { awardFirstPostAchievement } = require("../utils/achievements");
+const { withLiked } = require("../utils/likes");
 
-const withLiked = (obj, userId) => ({
-  ...obj,
-  liked: obj.likes.some((id) => id.toString() === userId),
-  likesCount: obj.likes.length,
-});
+const serializePosts = async (posts, userId) => {
+  const postIds = posts.map((post) => post._id);
+  const reposts = await Repost.find({ post: { $in: postIds } }).select(
+    "post user",
+  );
+
+  return posts.map((post) => {
+    const obj = post.toObject();
+    const postReposts = reposts.filter(
+      (repost) => repost.post.toString() === obj._id.toString(),
+    );
+    return {
+      ...withLiked(obj, userId),
+      comments: obj.comments.map((c) => withLiked(c, userId)),
+      reposts: postReposts.length,
+      reposted: postReposts.some(
+        (repost) => repost.user.toString() === userId,
+      ),
+    };
+  });
+};
 
 const createPost = async (req, res) => {
   try {
-    const { content, postwallId } = req.body;
-    if (!content || !postwallId)
+    const { content, postwallId, image } = req.body;
+    if ((!content && !image) || !postwallId)
       return res.status(400).json(errorResponse("MISSING_REQUIRED_FIELDS"));
 
     const post = await Post.create({
       content,
+      image,
       postwall: postwallId,
       user: req.user.id,
     });
     await post.populate("user", "name avatar username");
-
-    await User.findByIdAndUpdate(req.user.id, {
-      "achievements.firstPost": true,
-    });
+    await awardFirstPostAchievement(req.user.id);
 
     res.status(201).json(post);
   } catch (err) {
@@ -32,8 +50,43 @@ const createPost = async (req, res) => {
   }
 };
 
+const serializeReposts = async (reposts, userId) => {
+  const validReposts = reposts.filter(
+    (repost) =>
+      repost.post &&
+      repost.post.user._id.toString() !== repost.user._id.toString(),
+  );
+
+  const repostedPosts = await serializePosts(
+    validReposts.map((repost) => repost.post),
+    userId,
+  );
+
+  for (let i = 0; i < repostedPosts.length; i++) {
+    repostedPosts[i].repostedBy = {
+      name: validReposts[i].user.name,
+      username: validReposts[i].user.username,
+    };
+    repostedPosts[i].repostedAt = validReposts[i].createdAt;
+  }
+
+  return repostedPosts;
+};
+
+const sortByWallDate = (posts) => {
+  posts.sort(
+    (a, b) =>
+      new Date(b.repostedAt ?? b.createdAt) -
+      new Date(a.repostedAt ?? a.createdAt),
+  );
+  return posts;
+};
+
 const getPosts = async (req, res) => {
   try {
+    const postwall = await Postwall.findById(req.params.postwallId);
+    if (!postwall) return res.status(404).json(errorResponse("NOT_FOUND"));
+
     const posts = await Post.find({ postwall: req.params.postwallId })
       .populate("user", "name avatar username")
       .populate({
@@ -42,16 +95,93 @@ const getPosts = async (req, res) => {
       })
       .sort({ createdAt: -1 });
 
-    const userId = req.user.id;
-    res.json(
-      posts.map((post) => {
-        const obj = post.toObject();
-        return {
-          ...withLiked(obj, userId),
-          comments: obj.comments.map((c) => withLiked(c, userId)),
-        };
-      }),
-    );
+    const reposts = await Repost.find({ user: postwall.user })
+      .populate({
+        path: "post",
+        populate: [
+          { path: "user", select: "name avatar username" },
+          {
+            path: "comments",
+            populate: { path: "user", select: "name avatar username" },
+          },
+        ],
+      })
+      .populate("user", "name username")
+      .sort({ createdAt: -1 });
+
+    const ownPosts = await serializePosts(posts, req.user.id);
+    const repostedPosts = await serializeReposts(reposts, req.user.id);
+
+    res.json(sortByWallDate([...ownPosts, ...repostedPosts]));
+  } catch (err) {
+    console.error(err);
+    res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
+  }
+};
+
+const getFriendsFeed = async (req, res) => {
+  try {
+    const user = await User.findOne({ username: req.params.username });
+    if (!user) return res.status(404).json(errorResponse("USER_NOT_FOUND"));
+
+    if (req.user.id !== user._id.toString()) {
+      return res.status(403).json(errorResponse("ACCESS_DENIED"));
+    }
+
+    const postwalls = await Postwall.find({
+      user: { $in: user.friends },
+    }).select("_id");
+
+    const posts = await Post.find({
+      postwall: { $in: postwalls.map((postwall) => postwall._id) },
+    })
+      .populate("user", "name avatar username breed")
+      .populate({
+        path: "comments",
+        populate: { path: "user", select: "name avatar username" },
+      })
+      .sort({ createdAt: -1 })
+      .limit(50);
+
+    const reposts = await Repost.find({ user: { $in: user.friends } })
+      .populate({
+        path: "post",
+        populate: [
+          { path: "user", select: "name avatar username breed" },
+          {
+            path: "comments",
+            populate: { path: "user", select: "name avatar username" },
+          },
+        ],
+      })
+      .populate("user", "name username")
+      .sort({ createdAt: -1 })
+      .limit(50);
+
+    const friendsPosts = await serializePosts(posts, req.user.id);
+    const repostedPosts = await serializeReposts(reposts, req.user.id);
+
+    res.json(sortByWallDate([...friendsPosts, ...repostedPosts]));
+  } catch (err) {
+    console.error(err);
+    res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
+  }
+};
+
+const updatePost = async (req, res) => {
+  try {
+    const { content } = req.body;
+    if (!content)
+      return res.status(400).json(errorResponse("MISSING_REQUIRED_FIELDS"));
+
+    const post = await Post.findById(req.params.postId);
+    if (!post) return res.status(404).json(errorResponse("POST_NOT_FOUND"));
+    if (post.user.toString() !== req.user.id)
+      return res.status(403).json(errorResponse("ACCESS_DENIED"));
+
+    post.content = content;
+    await post.save();
+    res.json({ message: "Post updated" });
   } catch (err) {
     console.error(err);
     res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
@@ -66,6 +196,7 @@ const deletePost = async (req, res) => {
       return res.status(403).json(errorResponse("ACCESS_DENIED"));
 
     await post.deleteOne();
+    await Repost.deleteMany({ post: post._id });
     res.json({ message: "Post deleted" });
   } catch (err) {
     console.error(err);
@@ -73,4 +204,4 @@ const deletePost = async (req, res) => {
   }
 };
 
-module.exports = { createPost, getPosts, deletePost };
+module.exports = { createPost, getPosts, getFriendsFeed, updatePost, deletePost };
