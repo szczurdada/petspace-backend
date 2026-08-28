@@ -5,6 +5,8 @@ const postController = require("../controllers/postController");
 
 router.post("/", authMiddleware, postController.createPost);
 router.get("/postwall/:postwallId", authMiddleware, postController.getPosts);
+router.get("/feed/:username", authMiddleware, postController.getFriendsFeed);
+router.put("/:postId", authMiddleware, postController.updatePost);
 router.delete("/:postId", authMiddleware, postController.deletePost);
 
 module.exports = router;
