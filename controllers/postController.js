@@ -119,7 +119,7 @@ const getPosts = async (req, res) => {
   }
 };
 
-const getFriendsFeed = async (req, res) => {
+const getFeed = async (req, res) => {
   try {
     const user = await User.findOne({ username: req.params.username });
     if (!user) return res.status(404).json(errorResponse("USER_NOT_FOUND"));
@@ -128,8 +128,12 @@ const getFriendsFeed = async (req, res) => {
       return res.status(403).json(errorResponse("ACCESS_DENIED"));
     }
 
+    const feedUserIds = [
+      ...new Set([...user.friends, ...user.following].map((id) => id.toString())),
+    ];
+
     const postwalls = await Postwall.find({
-      user: { $in: user.friends },
+      user: { $in: feedUserIds },
     }).select("_id");
 
     const posts = await Post.find({
@@ -143,7 +147,7 @@ const getFriendsFeed = async (req, res) => {
       .sort({ createdAt: -1 })
       .limit(50);
 
-    const reposts = await Repost.find({ user: { $in: user.friends } })
+    const reposts = await Repost.find({ user: { $in: feedUserIds } })
       .populate({
         path: "post",
         populate: [
@@ -204,4 +208,4 @@ const deletePost = async (req, res) => {
   }
 };
 
-module.exports = { createPost, getPosts, getFriendsFeed, updatePost, deletePost };
+module.exports = { createPost, getPosts, getFeed, updatePost, deletePost };
