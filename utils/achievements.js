@@ -19,4 +19,17 @@ const grantFirstFriendAchievements = async (userId, friendId) => {
   await awardFirstFriendAchievement(friendId);
 };
 
-module.exports = { grantFirstFriendAchievements };
+const awardFirstPostAchievement = async (userId) => {
+  const user = await User.findById(userId);
+
+  if (user.achievements.firstPost) {
+    return;
+  }
+
+  user.achievements.firstPost = true;
+  await user.save();
+
+  await notify({ recipient: userId, user: null, type: "achievement" });
+};
+
+module.exports = { grantFirstFriendAchievements, awardFirstPostAchievement };
