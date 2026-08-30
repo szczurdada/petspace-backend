@@ -3,6 +3,8 @@ const User = require("../models/User");
 const Photo = require("../models/Photo");
 const { errorResponse } = require("../utils/errors");
 
+const MAX_PHOTOS_PER_USER = 300;
+
 const uploadToCloudinary = (buffer, folder) =>
   new Promise((resolve, reject) =>
     cloudinary.uploader
@@ -17,6 +19,10 @@ const createPhoto = async (publicId, userId) => {
 
 const uploadAvatar = async (req, res) => {
   try {
+    const photoCount = await Photo.countDocuments({ user: req.user.id });
+    if (photoCount >= MAX_PHOTOS_PER_USER)
+      return res.status(400).json(errorResponse("PHOTO_LIMIT_REACHED"));
+
     const result = await uploadToCloudinary(req.file.buffer, "my-app/avatars");
     const optimizedUrl = result.secure_url.replace("/upload/", "/upload/w_256,h_256,c_fill,g_face/");
     const photo = await createPhoto(result.public_id, req.user.id);
@@ -35,6 +41,10 @@ const uploadAvatar = async (req, res) => {
 
 const uploadPhoto = async (req, res) => {
   try {
+    const photoCount = await Photo.countDocuments({ user: req.user.id });
+    if (photoCount >= MAX_PHOTOS_PER_USER)
+      return res.status(400).json(errorResponse("PHOTO_LIMIT_REACHED"));
+
     const result = await uploadToCloudinary(req.file.buffer, "my-app/photos");
     const photo = await createPhoto(result.public_id, req.user.id);
 
