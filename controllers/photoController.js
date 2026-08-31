@@ -17,6 +17,19 @@ const createPhoto = async (publicId, userId) => {
   return photo;
 };
 
+const buildAvatarUrl = (publicId) =>
+  `https://res.cloudinary.com/${process.env.CLOUDINARY_CLOUD_NAME}/image/upload/w_256,h_256,c_fill,g_face/${publicId}`;
+
+const findPreviousAvatarUrl = async (avatarPhotoIds) => {
+  const previousAvatarPhotoId = avatarPhotoIds.at(-1);
+  if (!previousAvatarPhotoId) return null;
+
+  const previousAvatarPhoto = await Photo.findById(previousAvatarPhotoId);
+  if (!previousAvatarPhoto) return null;
+
+  return buildAvatarUrl(previousAvatarPhoto.publicId);
+};
+
 const uploadAvatar = async (req, res) => {
   try {
     const photoCount = await Photo.countDocuments({ user: req.user.id });
@@ -62,8 +75,25 @@ const deletePhoto = async (req, res) => {
     const photo = await Photo.findOneAndDelete({ _id: req.params.id, user: req.user.id });
     if (!photo) return res.status(404).json(errorResponse("PHOTO_NOT_FOUND"));
 
+    const user = await User.findById(req.user.id);
+    const lastAvatarPhotoId = user.avatarPhotos.at(-1);
+    const isCurrentAvatar = lastAvatarPhotoId?.toString() === photo._id.toString();
+
+    const remainingPhotoIds = user.photos.filter(
+      (id) => id.toString() !== photo._id.toString()
+    );
+    const remainingAvatarPhotoIds = user.avatarPhotos.filter(
+      (id) => id.toString() !== photo._id.toString()
+    );
+
+    const update = { photos: remainingPhotoIds, avatarPhotos: remainingAvatarPhotoIds };
+
+    if (isCurrentAvatar) {
+      update.avatar = await findPreviousAvatarUrl(remainingAvatarPhotoIds);
+    }
+
     await Promise.all([
-      User.findByIdAndUpdate(req.user.id, { $pull: { photos: photo._id } }),
+      User.findByIdAndUpdate(req.user.id, update),
       cloudinary.uploader.destroy(photo.publicId),
     ]);
 
