@@ -19,15 +19,16 @@ Node.js, Express 5, MongoDB, Mongoose, Socket.IO, JWT, bcryptjs, Cloudinary, Mul
 ## Structure
 
 ```
-config/       app configuration
-controllers/  request handlers / business logic
-middleware/    auth middleware, file upload (multer)
-models/       Mongoose schemas
-routers/      Express routes
-scripts/      one-off seed scripts (breeds, countries)
-sockets/      Socket.IO event handlers
-utils/        shared helpers (cloudinary, error formatting)
-server.js     app entry point
+src/
+  server.js       app entry point
+  config/         app configuration
+  models/         Mongoose schemas
+  middleware/     auth middleware, file upload (multer)
+  sockets/        Socket.IO event handlers
+  utils/          shared helpers (cloudinary, error formatting)
+  scripts/        one-off seed scripts (breeds, countries)
+  modules/        one folder per domain (auth, posts, friends, family, chat, ...),
+                   each holding its router + controller
 ```
 
 ## Running it
@@ -51,8 +52,8 @@ CLOUDINARY_SECRET_KEY=
 To seed breeds/countries:
 
 ```bash
-node scripts/seedBreeds.js
-node scripts/seedCountries.js
+node src/scripts/seedBreeds.js
+node src/scripts/seedCountries.js
 ```
 
 ## Status
