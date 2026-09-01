@@ -1,10 +1,6 @@
 const Router = require("express");
 const router = new Router();
-const {
-  likePost,
-  likeComment,
-  likePhoto,
-} = require("./likesController");
+const { likePost, likeComment, likePhoto } = require("./likesController");
 const { authMiddleware } = require("../../middleware/authMiddleware");
 
 router.post("/post/:id", authMiddleware, likePost);

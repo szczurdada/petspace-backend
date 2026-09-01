@@ -1,12 +1,20 @@
 const Router = require("express");
 const router = new Router();
-const { authMiddleware, optionalAuthMiddleware } = require("../../middleware/authMiddleware");
-const commentController = require("./commentController");
+const {
+  authMiddleware,
+  optionalAuthMiddleware,
+} = require("../../middleware/authMiddleware");
+const {
+  createComment,
+  getComments,
+  updateComment,
+  deleteComment,
+} = require("./commentController");
 
-router.post("/", authMiddleware, commentController.createComment);
-router.get("/postwall/:postId", optionalAuthMiddleware, commentController.getComments);
-router.get("/photo/:photoId", optionalAuthMiddleware, commentController.getComments);
-router.put("/:commentId", authMiddleware, commentController.updateComment);
-router.delete("/:commentId", authMiddleware, commentController.deleteComment);
+router.post("/", authMiddleware, createComment);
+router.get("/postwall/:postId", optionalAuthMiddleware, getComments);
+router.get("/photo/:photoId", optionalAuthMiddleware, getComments);
+router.put("/:commentId", authMiddleware, updateComment);
+router.delete("/:commentId", authMiddleware, deleteComment);
 
 module.exports = router;

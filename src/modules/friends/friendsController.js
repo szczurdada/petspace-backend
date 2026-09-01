@@ -3,7 +3,12 @@ const FriendRequest = require("../../models/FriendRequest");
 const { errorResponse } = require("../../utils/errors");
 const { findUsersByUsername } = require("../../utils/findUsers");
 const { notify } = require("../../utils/notify");
-const { containsId, removeId, follow, unfollow } = require("../../utils/friends");
+const {
+  containsId,
+  removeId,
+  follow,
+  unfollow,
+} = require("../../utils/friends");
 const { grantFirstFriendAchievements } = require("../../utils/achievements");
 
 const getFriends = async (req, res) => {
@@ -75,7 +80,10 @@ const addFriend = async (req, res) => {
     if (username === friendUsername)
       return res.status(400).json(errorResponse("INVALID_REQUEST"));
 
-    const [user, friend] = await findUsersByUsername([username, friendUsername]);
+    const [user, friend] = await findUsersByUsername([
+      username,
+      friendUsername,
+    ]);
 
     if (!user || !friend)
       return res.status(404).json(errorResponse("USER_NOT_FOUND"));
@@ -131,11 +139,15 @@ const addFriend = async (req, res) => {
     await friendRequest.save();
     await user.save();
     await friend.save();
-    await notify({ recipient: friend._id, user: user._id, type: "friendRequest" });
+    await notify({
+      recipient: friend._id,
+      user: user._id,
+      type: "friendRequest",
+    });
 
     res.json({ message: "Friend request sent" });
-  } catch (error) {
-    console.error(error);
+  } catch (err) {
+    console.error(err);
     res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
   }
 };
@@ -145,7 +157,10 @@ const deleteFriend = async (req, res) => {
     const username = req.params.username.toLowerCase();
     const friendUsername = req.params.friendUsername.toLowerCase();
 
-    const [user, friend] = await findUsersByUsername([username, friendUsername]);
+    const [user, friend] = await findUsersByUsername([
+      username,
+      friendUsername,
+    ]);
 
     if (!user || !friend)
       return res.status(404).json(errorResponse("USER_NOT_FOUND"));
@@ -172,8 +187,8 @@ const deleteFriend = async (req, res) => {
     });
 
     res.json({ message: "Friend removed" });
-  } catch (error) {
-    console.error(error);
+  } catch (err) {
+    console.error(err);
     res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
   }
 };
@@ -224,8 +239,8 @@ const acceptFriendRequest = async (req, res) => {
     );
 
     res.json({ message: "Friend request accepted" });
-  } catch (error) {
-    console.error(error);
+  } catch (err) {
+    console.error(err);
     res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
   }
 };
@@ -254,8 +269,8 @@ const rejectFriendRequest = async (req, res) => {
     await friendRequest.save();
 
     res.json({ message: "Friend request rejected" });
-  } catch (error) {
-    console.error(error);
+  } catch (err) {
+    console.error(err);
     res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
   }
 };
@@ -276,8 +291,8 @@ const getPendingRequests = async (req, res) => {
     }).populate("from", "username name avatar");
 
     res.json(requests);
-  } catch (error) {
-    console.error(error);
+  } catch (err) {
+    console.error(err);
     res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
   }
 };

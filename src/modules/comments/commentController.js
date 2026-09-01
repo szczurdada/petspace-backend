@@ -28,13 +28,21 @@ const createComment = async (req, res) => {
     await comment.populate("user", "name avatar username");
 
     if (replyTo) {
-      await notify({ recipient: replyTo.user, user: req.user.id, type: "comment" });
+      await notify({
+        recipient: replyTo.user,
+        user: req.user.id,
+        type: "comment",
+      });
     } else {
       const target = await (postId ? Post : Photo)
         .findById(postId || photoId)
         .select("user");
       if (target) {
-        await notify({ recipient: target.user, user: req.user.id, type: "comment" });
+        await notify({
+          recipient: target.user,
+          user: req.user.id,
+          type: "comment",
+        });
       }
     }
 
