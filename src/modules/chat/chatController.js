@@ -2,7 +2,8 @@ const Message = require("../../models/Message");
 const User = require("../../models/User");
 const { errorResponse } = require("../../utils/errors");
 
-const isRoomParticipant = (roomId, userId) => roomId.split("_").includes(userId);
+const isRoomParticipant = (roomId, userId) =>
+  roomId.split("_").includes(userId);
 
 const getMessages = async (req, res) => {
   try {
@@ -21,8 +22,8 @@ const getMessages = async (req, res) => {
       .sort({ createdAt: 1 });
 
     res.json(messages);
-  } catch (e) {
-    console.error(e);
+  } catch (err) {
+    console.error(err);
     res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
   }
 };
@@ -81,9 +82,9 @@ const getConversations = async (req, res) => {
     );
 
     if (missingPartnerIds.length > 0) {
-      const partners = await User.find({ _id: { $in: missingPartnerIds } }).select(
-        "username name avatar isOnline lastSeen",
-      );
+      const partners = await User.find({
+        _id: { $in: missingPartnerIds },
+      }).select("username name avatar isOnline lastSeen");
       for (const partner of partners) {
         contactsById.set(partner._id.toString(), {
           id: partner._id.toString(),
@@ -124,8 +125,8 @@ const getConversations = async (req, res) => {
     });
 
     res.json(contacts);
-  } catch (e) {
-    console.error(e);
+  } catch (err) {
+    console.error(err);
     res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
   }
 };
@@ -145,8 +146,8 @@ const markMessagesRead = async (req, res) => {
     );
 
     res.json({ message: "Messages marked as read" });
-  } catch (e) {
-    console.error(e);
+  } catch (err) {
+    console.error(err);
     res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
   }
 };

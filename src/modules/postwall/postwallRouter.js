@@ -1,7 +1,7 @@
 const Router = require("express");
 const router = new Router();
-const postwallController = require("./postwallController");
+const { getPostwall } = require("./postwallController");
 
-router.get("/:username", postwallController.getPostwall);
+router.get("/:username", getPostwall);
 
 module.exports = router;

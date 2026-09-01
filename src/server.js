@@ -68,8 +68,8 @@ const start = async () => {
     http.listen(process.env.PORT, () =>
       console.log(`Server started on port ${process.env.PORT}`),
     );
-  } catch (e) {
-    console.error("Failed to connect to MongoDB, server not started:", e);
+  } catch (err) {
+    console.error("Failed to connect to MongoDB, server not started:", err);
     process.exit(1);
   }
 };

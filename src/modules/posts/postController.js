@@ -21,9 +21,7 @@ const serializePosts = async (posts, userId) => {
       ...withLiked(obj, userId),
       comments: obj.comments.map((c) => withLiked(c, userId)),
       reposts: postReposts.length,
-      reposted: postReposts.some(
-        (repost) => repost.user.toString() === userId,
-      ),
+      reposted: postReposts.some((repost) => repost.user.toString() === userId),
     };
   });
 };
@@ -129,7 +127,9 @@ const getFeed = async (req, res) => {
     }
 
     const feedUserIds = [
-      ...new Set([...user.friends, ...user.following].map((id) => id.toString())),
+      ...new Set(
+        [...user.friends, ...user.following].map((id) => id.toString()),
+      ),
     ];
 
     const postwalls = await Postwall.find({

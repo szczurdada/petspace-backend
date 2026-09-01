@@ -1,8 +1,8 @@
 const { Schema, model } = require("mongoose");
 
-const CountrySchema = new Schema({
+const Country = new Schema({
   country: { type: String, required: true, unique: true },
   cities: [{ type: String }],
 });
 
-module.exports = model("Country", CountrySchema);
+module.exports = model("Country", Country);

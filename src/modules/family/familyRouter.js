@@ -1,14 +1,14 @@
 const Router = require("express");
 const router = new Router();
 const { authMiddleware } = require("../../middleware/authMiddleware");
-const familyController = require("./familyController");
+const {
+  getFamily,
+  addFamilyMember,
+  deleteFamilyMember,
+} = require("./familyController");
 
-router.get("/:username", familyController.getFamily);
-router.post("/", authMiddleware, familyController.addFamilyMember);
-router.delete(
-  "/:memberId",
-  authMiddleware,
-  familyController.deleteFamilyMember,
-);
+router.get("/:username", getFamily);
+router.post("/", authMiddleware, addFamilyMember);
+router.delete("/:memberId", authMiddleware, deleteFamilyMember);
 
 module.exports = router;

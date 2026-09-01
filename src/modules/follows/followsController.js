@@ -50,7 +50,10 @@ const followUser = async (req, res) => {
     if (username === targetUsername)
       return res.status(400).json(errorResponse("INVALID_REQUEST"));
 
-    const [user, target] = await findUsersByUsername([username, targetUsername]);
+    const [user, target] = await findUsersByUsername([
+      username,
+      targetUsername,
+    ]);
 
     if (!user || !target)
       return res.status(404).json(errorResponse("USER_NOT_FOUND"));
@@ -69,8 +72,8 @@ const followUser = async (req, res) => {
     await target.save();
 
     res.json({ message: "Now following" });
-  } catch (error) {
-    console.error(error);
+  } catch (err) {
+    console.error(err);
     res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
   }
 };
@@ -80,7 +83,10 @@ const unfollowUser = async (req, res) => {
     const username = req.params.username.toLowerCase();
     const targetUsername = req.params.targetUsername.toLowerCase();
 
-    const [user, target] = await findUsersByUsername([username, targetUsername]);
+    const [user, target] = await findUsersByUsername([
+      username,
+      targetUsername,
+    ]);
 
     if (!user || !target)
       return res.status(404).json(errorResponse("USER_NOT_FOUND"));
@@ -96,8 +102,8 @@ const unfollowUser = async (req, res) => {
     await target.save();
 
     res.json({ message: "Unfollowed" });
-  } catch (error) {
-    console.error(error);
+  } catch (err) {
+    console.error(err);
     res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
   }
 };
@@ -107,7 +113,10 @@ const removeFollower = async (req, res) => {
     const username = req.params.username.toLowerCase();
     const followerUsername = req.params.followerUsername.toLowerCase();
 
-    const [user, follower] = await findUsersByUsername([username, followerUsername]);
+    const [user, follower] = await findUsersByUsername([
+      username,
+      followerUsername,
+    ]);
 
     if (!user || !follower)
       return res.status(404).json(errorResponse("USER_NOT_FOUND"));
@@ -125,8 +134,8 @@ const removeFollower = async (req, res) => {
     await follower.save();
 
     res.json({ message: "Follower removed" });
-  } catch (error) {
-    console.error(error);
+  } catch (err) {
+    console.error(err);
     res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
   }
 };

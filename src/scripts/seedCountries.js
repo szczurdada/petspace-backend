@@ -6,9 +6,7 @@ async function seed() {
   try {
     await mongoose.connect(process.env.MONGO_URL);
 
-    const res = await fetch(
-      "https://countriesnow.space/api/v0.1/countries",
-    );
+    const res = await fetch("https://countriesnow.space/api/v0.1/countries");
     const data = await res.json();
 
     const countries = data.data.map((item) => ({
@@ -22,8 +20,8 @@ async function seed() {
     await Country.insertMany(countries);
     console.log("Done!");
     process.exit();
-  } catch (e) {
-    console.log(e);
+  } catch (err) {
+    console.error(err);
   }
 }
 

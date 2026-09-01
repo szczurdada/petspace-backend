@@ -11,7 +11,10 @@ const {
   signout,
 } = require("./authController");
 const { check } = require("express-validator");
-const { authMiddleware, optionalAuthMiddleware } = require("../../middleware/authMiddleware");
+const {
+  authMiddleware,
+  optionalAuthMiddleware,
+} = require("../../middleware/authMiddleware");
 
 router.post(
   "/signup",

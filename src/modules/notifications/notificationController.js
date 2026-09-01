@@ -63,4 +63,8 @@ const markAllNotificationsRead = async (req, res) => {
   }
 };
 
-module.exports = { getNotifications, markNotificationRead, markAllNotificationsRead };
+module.exports = {
+  getNotifications,
+  markNotificationRead,
+  markAllNotificationsRead,
+};
