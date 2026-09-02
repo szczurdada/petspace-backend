@@ -15,9 +15,11 @@ const {
   authMiddleware,
   optionalAuthMiddleware,
 } = require("../../middleware/authMiddleware");
+const { authAttemptsLimiter } = require("../../middleware/rateLimiter");
 
 router.post(
   "/signup",
+  authAttemptsLimiter,
   [
     check("username", "The username can't be empty").notEmpty(),
     check("email", "Invalid email").isEmail(),
@@ -29,7 +31,7 @@ router.post(
   signup,
 );
 
-router.post("/signin", signin);
+router.post("/signin", authAttemptsLimiter, signin);
 router.get("/user/:username", optionalAuthMiddleware, getUser);
 router.get("/me", authMiddleware, getMe);
 router.put("/user/:username", authMiddleware, updateUser);
