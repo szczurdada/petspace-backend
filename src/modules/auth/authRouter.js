@@ -31,7 +31,15 @@ router.post(
   signup,
 );
 
-router.post("/signin", authAttemptsLimiter, signin);
+router.post(
+  "/signin",
+  authAttemptsLimiter,
+  [
+    check("email", "Invalid email").isEmail(),
+    check("password", "Password is required").notEmpty(),
+  ],
+  signin,
+);
 router.get("/user/:username", optionalAuthMiddleware, getUser);
 router.get("/me", authMiddleware, getMe);
 router.put("/user/:username", authMiddleware, updateUser);

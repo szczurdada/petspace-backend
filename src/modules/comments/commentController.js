@@ -1,15 +1,19 @@
 const Comment = require("../../models/Comment");
 const Post = require("../../models/Post");
 const Photo = require("../../models/Photo");
-const { errorResponse } = require("../../utils/errors");
+const { errorResponse, reportError } = require("../../utils/errors");
 const { notify } = require("../../utils/notify");
 const { withLiked } = require("../../utils/likes");
+
+const MAX_COMMENT_CONTENT_LENGTH = 1000;
 
 const createComment = async (req, res) => {
   try {
     const { content, postId, photoId, replyCommentId } = req.body;
     if (!content || (!postId && !photoId))
       return res.status(400).json(errorResponse("MISSING_REQUIRED_FIELDS"));
+    if (content.length > MAX_COMMENT_CONTENT_LENGTH)
+      return res.status(400).json(errorResponse("INVALID_REQUEST"));
 
     let replyTo = null;
     if (replyCommentId) {
@@ -48,8 +52,7 @@ const createComment = async (req, res) => {
 
     res.status(201).json(comment);
   } catch (err) {
-    console.error(err);
-    res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
+    reportError(err, res);
   }
 };
 
@@ -65,8 +68,7 @@ const getComments = async (req, res) => {
 
     res.json(comments.map((c) => withLiked(c.toObject(), userId)));
   } catch (err) {
-    console.error(err);
-    res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
+    reportError(err, res);
   }
 };
 
@@ -75,6 +77,8 @@ const updateComment = async (req, res) => {
     const { content } = req.body;
     if (!content)
       return res.status(400).json(errorResponse("MISSING_REQUIRED_FIELDS"));
+    if (content.length > MAX_COMMENT_CONTENT_LENGTH)
+      return res.status(400).json(errorResponse("INVALID_REQUEST"));
 
     const comment = await Comment.findById(req.params.commentId);
     if (!comment)
@@ -86,8 +90,7 @@ const updateComment = async (req, res) => {
     await comment.save();
     res.json({ message: "Comment updated" });
   } catch (err) {
-    console.error(err);
-    res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
+    reportError(err, res);
   }
 };
 
@@ -103,8 +106,7 @@ const deleteComment = async (req, res) => {
     await Comment.deleteMany({ parent: comment._id });
     res.json({ message: "Comment deleted" });
   } catch (err) {
-    console.error(err);
-    res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
+    reportError(err, res);
   }
 };
 

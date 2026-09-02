@@ -1,6 +1,6 @@
 const Postwall = require("../../models/Postwall");
 const User = require("../../models/User");
-const { errorResponse } = require("../../utils/errors");
+const { errorResponse, reportError } = require("../../utils/errors");
 
 const getPostwall = async (req, res) => {
   try {
@@ -10,8 +10,7 @@ const getPostwall = async (req, res) => {
     const postwall = await Postwall.findOne({ user: user._id });
     res.json(postwall);
   } catch (err) {
-    console.error(err);
-    res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
+    reportError(err, res);
   }
 };
 

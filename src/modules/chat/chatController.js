@@ -1,6 +1,6 @@
 const Message = require("../../models/Message");
 const User = require("../../models/User");
-const { errorResponse } = require("../../utils/errors");
+const { errorResponse, reportError } = require("../../utils/errors");
 
 const isRoomParticipant = (roomId, userId) =>
   roomId.split("_").includes(userId);
@@ -23,8 +23,7 @@ const getMessages = async (req, res) => {
 
     res.json(messages);
   } catch (err) {
-    console.error(err);
-    res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
+    reportError(err, res);
   }
 };
 
@@ -126,8 +125,7 @@ const getConversations = async (req, res) => {
 
     res.json(contacts);
   } catch (err) {
-    console.error(err);
-    res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
+    reportError(err, res);
   }
 };
 
@@ -147,8 +145,7 @@ const markMessagesRead = async (req, res) => {
 
     res.json({ message: "Messages marked as read" });
   } catch (err) {
-    console.error(err);
-    res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
+    reportError(err, res);
   }
 };
 

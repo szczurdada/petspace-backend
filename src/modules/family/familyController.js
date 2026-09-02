@@ -1,6 +1,6 @@
 const User = require("../../models/User");
 const FamilyMember = require("../../models/FamilyMember");
-const { errorResponse } = require("../../utils/errors");
+const { errorResponse, reportError } = require("../../utils/errors");
 
 const getFamily = async (req, res) => {
   try {
@@ -13,8 +13,7 @@ const getFamily = async (req, res) => {
 
     res.json(members);
   } catch (err) {
-    console.error(err);
-    res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
+    reportError(err, res);
   }
 };
 
@@ -39,8 +38,7 @@ const addFamilyMember = async (req, res) => {
 
     res.status(201).json(member);
   } catch (err) {
-    console.error(err);
-    res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
+    reportError(err, res);
   }
 };
 
@@ -56,8 +54,7 @@ const deleteFamilyMember = async (req, res) => {
     await member.deleteOne();
     res.json({ message: "Family member removed" });
   } catch (err) {
-    console.error(err);
-    res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
+    reportError(err, res);
   }
 };
 

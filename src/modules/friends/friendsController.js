@@ -1,6 +1,7 @@
+const mongoose = require("mongoose");
 const User = require("../../models/User");
 const FriendRequest = require("../../models/FriendRequest");
-const { errorResponse } = require("../../utils/errors");
+const { errorResponse, reportError } = require("../../utils/errors");
 const { findUsersByUsername } = require("../../utils/findUsers");
 const { notify } = require("../../utils/notify");
 const {
@@ -20,8 +21,7 @@ const getFriends = async (req, res) => {
     if (!user) return res.status(404).json(errorResponse("USER_NOT_FOUND"));
     res.json(user.friends);
   } catch (err) {
-    console.error(err);
-    res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
+    reportError(err, res);
   }
 };
 
@@ -67,8 +67,7 @@ const getSuggestedFriends = async (req, res) => {
 
     res.json(bestMatches);
   } catch (err) {
-    console.error(err);
-    res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
+    reportError(err, res);
   }
 };
 
@@ -147,8 +146,7 @@ const addFriend = async (req, res) => {
 
     res.json({ message: "Friend request sent" });
   } catch (err) {
-    console.error(err);
-    res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
+    reportError(err, res);
   }
 };
 
@@ -188,8 +186,7 @@ const deleteFriend = async (req, res) => {
 
     res.json({ message: "Friend removed" });
   } catch (err) {
-    console.error(err);
-    res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
+    reportError(err, res);
   }
 };
 
@@ -220,28 +217,30 @@ const acceptFriendRequest = async (req, res) => {
     follow(user, friend);
     follow(friend, user);
 
-    await user.save();
-    await friend.save();
-    await friendRequest.save();
+    const session = await mongoose.startSession();
+    await session.withTransaction(async () => {
+      await user.save({ session });
+      await friend.save({ session });
+      await friendRequest.save({ session });
+      await FriendRequest.updateMany(
+        {
+          _id: { $ne: friendRequest._id },
+          status: "pending",
+          $or: [
+            { from: user._id, to: friend._id },
+            { from: friend._id, to: user._id },
+          ],
+        },
+        { status: "accepted" },
+      ).session(session);
+    });
+    await session.endSession();
 
     await grantFirstFriendAchievements(user._id, friend._id);
 
-    await FriendRequest.updateMany(
-      {
-        _id: { $ne: friendRequest._id },
-        status: "pending",
-        $or: [
-          { from: user._id, to: friend._id },
-          { from: friend._id, to: user._id },
-        ],
-      },
-      { status: "accepted" },
-    );
-
     res.json({ message: "Friend request accepted" });
   } catch (err) {
-    console.error(err);
-    res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
+    reportError(err, res);
   }
 };
 
@@ -270,8 +269,7 @@ const rejectFriendRequest = async (req, res) => {
 
     res.json({ message: "Friend request rejected" });
   } catch (err) {
-    console.error(err);
-    res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
+    reportError(err, res);
   }
 };
 
@@ -292,8 +290,7 @@ const getPendingRequests = async (req, res) => {
 
     res.json(requests);
   } catch (err) {
-    console.error(err);
-    res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
+    reportError(err, res);
   }
 };
 

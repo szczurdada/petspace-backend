@@ -1,7 +1,7 @@
 const Post = require("../../models/Post");
 const Comment = require("../../models/Comment");
 const Photo = require("../../models/Photo");
-const { errorResponse } = require("../../utils/errors");
+const { errorResponse, reportError } = require("../../utils/errors");
 const { notify } = require("../../utils/notify");
 
 const isLikedBy = (doc, userId) =>
@@ -24,8 +24,7 @@ const likeHandler = (Model, type) => async (req, res) => {
     if (liked) await notify({ recipient: ownerId, user: req.user.id, type });
     res.json({ liked, count });
   } catch (err) {
-    console.error(err);
-    res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
+    reportError(err, res);
   }
 };
 

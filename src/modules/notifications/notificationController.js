@@ -1,6 +1,6 @@
 const User = require("../../models/User");
 const Notification = require("../../models/Notification");
-const { errorResponse } = require("../../utils/errors");
+const { errorResponse, reportError } = require("../../utils/errors");
 
 const toAppNotification = (n) => ({
   id: n.id,
@@ -24,8 +24,7 @@ const getNotifications = async (req, res) => {
 
     res.json(notifications.map(toAppNotification));
   } catch (err) {
-    console.error(err);
-    res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
+    reportError(err, res);
   }
 };
 
@@ -40,8 +39,7 @@ const markNotificationRead = async (req, res) => {
     await notification.save();
     res.json({ message: "Notification marked as read" });
   } catch (err) {
-    console.error(err);
-    res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
+    reportError(err, res);
   }
 };
 
@@ -58,8 +56,7 @@ const markAllNotificationsRead = async (req, res) => {
     );
     res.json({ message: "All notifications marked as read" });
   } catch (err) {
-    console.error(err);
-    res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
+    reportError(err, res);
   }
 };
 

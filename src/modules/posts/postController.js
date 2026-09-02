@@ -1,10 +1,13 @@
+const mongoose = require("mongoose");
 const User = require("../../models/User");
 const Post = require("../../models/Post");
 const Postwall = require("../../models/Postwall");
 const Repost = require("../../models/Repost");
-const { errorResponse } = require("../../utils/errors");
+const { errorResponse, reportError } = require("../../utils/errors");
 const { awardFirstPostAchievement } = require("../../utils/achievements");
 const { withLiked } = require("../../utils/likes");
+
+const MAX_POST_CONTENT_LENGTH = 3000;
 
 const serializePosts = async (posts, userId) => {
   const postIds = posts.map((post) => post._id);
@@ -31,6 +34,8 @@ const createPost = async (req, res) => {
     const { content, postwallId, image } = req.body;
     if ((!content && !image) || !postwallId)
       return res.status(400).json(errorResponse("MISSING_REQUIRED_FIELDS"));
+    if (content && content.length > MAX_POST_CONTENT_LENGTH)
+      return res.status(400).json(errorResponse("INVALID_REQUEST"));
 
     const post = await Post.create({
       content,
@@ -43,8 +48,7 @@ const createPost = async (req, res) => {
 
     res.status(201).json(post);
   } catch (err) {
-    console.error(err);
-    res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
+    reportError(err, res);
   }
 };
 
@@ -112,8 +116,7 @@ const getPosts = async (req, res) => {
 
     res.json(sortByWallDate([...ownPosts, ...repostedPosts]));
   } catch (err) {
-    console.error(err);
-    res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
+    reportError(err, res);
   }
 };
 
@@ -167,8 +170,7 @@ const getFeed = async (req, res) => {
 
     res.json(sortByWallDate([...friendsPosts, ...repostedPosts]));
   } catch (err) {
-    console.error(err);
-    res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
+    reportError(err, res);
   }
 };
 
@@ -177,6 +179,8 @@ const updatePost = async (req, res) => {
     const { content } = req.body;
     if (!content)
       return res.status(400).json(errorResponse("MISSING_REQUIRED_FIELDS"));
+    if (content.length > MAX_POST_CONTENT_LENGTH)
+      return res.status(400).json(errorResponse("INVALID_REQUEST"));
 
     const post = await Post.findById(req.params.postId);
     if (!post) return res.status(404).json(errorResponse("POST_NOT_FOUND"));
@@ -187,8 +191,7 @@ const updatePost = async (req, res) => {
     await post.save();
     res.json({ message: "Post updated" });
   } catch (err) {
-    console.error(err);
-    res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
+    reportError(err, res);
   }
 };
 
@@ -199,12 +202,16 @@ const deletePost = async (req, res) => {
     if (post.user.toString() !== req.user.id)
       return res.status(403).json(errorResponse("ACCESS_DENIED"));
 
-    await post.deleteOne();
-    await Repost.deleteMany({ post: post._id });
+    const session = await mongoose.startSession();
+    await session.withTransaction(async () => {
+      await Post.deleteOne({ _id: post._id }).session(session);
+      await Repost.deleteMany({ post: post._id }).session(session);
+    });
+    await session.endSession();
+
     res.json({ message: "Post deleted" });
   } catch (err) {
-    console.error(err);
-    res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
+    reportError(err, res);
   }
 };
 

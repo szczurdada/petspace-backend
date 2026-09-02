@@ -1,6 +1,9 @@
 const Router = require("express");
 const router = new Router();
-const { authMiddleware } = require("../../middleware/authMiddleware");
+const {
+  authMiddleware,
+  optionalAuthMiddleware,
+} = require("../../middleware/authMiddleware");
 const {
   getFriends,
   getSuggestedFriends,
@@ -12,7 +15,7 @@ const {
 } = require("./friendsController");
 
 router.get("/:username/suggestions", authMiddleware, getSuggestedFriends);
-router.get("/:username", getFriends);
+router.get("/:username", optionalAuthMiddleware, getFriends);
 router.post("/:username/add/:friendUsername", authMiddleware, addFriend);
 router.delete(
   "/:username/delete/:friendUsername",
