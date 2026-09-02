@@ -1,6 +1,9 @@
 const Router = require("express");
 const router = new Router();
-const { authMiddleware } = require("../../middleware/authMiddleware");
+const {
+  authMiddleware,
+  optionalAuthMiddleware,
+} = require("../../middleware/authMiddleware");
 const {
   getFollowers,
   getFollowing,
@@ -9,8 +12,8 @@ const {
   removeFollower,
 } = require("./followsController");
 
-router.get("/followers/:username", getFollowers);
-router.get("/following/:username", getFollowing);
+router.get("/followers/:username", optionalAuthMiddleware, getFollowers);
+router.get("/following/:username", optionalAuthMiddleware, getFollowing);
 router.post(
   "/followers/:username/follow/:targetUsername",
   authMiddleware,

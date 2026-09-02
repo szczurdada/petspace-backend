@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const User = require("../../models/User");
 const Postwall = require("../../models/Postwall");
 const FriendRequest = require("../../models/FriendRequest");
@@ -5,7 +6,7 @@ const bcrypt = require("bcryptjs");
 const { validationResult } = require("express-validator");
 const jwt = require("jsonwebtoken");
 const { secret } = require("../../config/config");
-const { errorResponse } = require("../../utils/errors");
+const { errorResponse, reportError } = require("../../utils/errors");
 const { withLiked } = require("../../utils/likes");
 
 const generateAccessToken = (id) =>
@@ -29,8 +30,13 @@ const signup = async (req, res) => {
       password: bcrypt.hashSync(password, 10),
       email,
     });
-    await user.save();
-    await Postwall.create({ user: user._id });
+
+    const session = await mongoose.startSession();
+    await session.withTransaction(async () => {
+      await user.save({ session });
+      await Postwall.create([{ user: user._id }], { session });
+    });
+    await session.endSession();
 
     res.json({
       token: generateAccessToken(user._id),
@@ -41,13 +47,16 @@ const signup = async (req, res) => {
       },
     });
   } catch (err) {
-    console.error(err);
-    res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
+    reportError(err, res);
   }
 };
 
 const signin = async (req, res) => {
   try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty())
+      return res.status(400).json({ message: "Errors", errors });
+
     const { email, password } = req.body;
     const user = await User.findOne({ email });
     if (!user || !bcrypt.compareSync(password, user.password))
@@ -66,8 +75,7 @@ const signin = async (req, res) => {
       },
     });
   } catch (err) {
-    console.error(err);
-    res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
+    reportError(err, res);
   }
 };
 
@@ -79,8 +87,7 @@ const signout = async (req, res) => {
     });
     res.json({ success: true });
   } catch (err) {
-    console.error(err);
-    res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
+    reportError(err, res);
   }
 };
 
@@ -108,8 +115,7 @@ const getUser = async (req, res) => {
       avatarPhotos: obj.avatarPhotos.map((photo) => withLiked(photo, userId)),
     });
   } catch (err) {
-    console.error(err);
-    res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
+    reportError(err, res);
   }
 };
 
@@ -131,8 +137,7 @@ const getMe = async (req, res) => {
 
     res.json({ ...user.toJSON(), sentRequests });
   } catch (err) {
-    console.error(err);
-    res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
+    reportError(err, res);
   }
 };
 
@@ -147,8 +152,7 @@ const registrationsSteps = async (req, res) => {
     );
     res.json(user);
   } catch (err) {
-    console.error(err);
-    res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
+    reportError(err, res);
   }
 };
 
@@ -163,8 +167,7 @@ const updateUser = async (req, res) => {
     );
     res.json(user);
   } catch (err) {
-    console.error(err);
-    res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
+    reportError(err, res);
   }
 };
 
@@ -184,8 +187,7 @@ const searchUsers = async (req, res) => {
 
     res.json(users);
   } catch (err) {
-    console.error(err);
-    res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
+    reportError(err, res);
   }
 };
 

@@ -1,5 +1,5 @@
 const User = require("../../models/User");
-const { errorResponse } = require("../../utils/errors");
+const { errorResponse, reportError } = require("../../utils/errors");
 const { findUsersByUsername } = require("../../utils/findUsers");
 
 const PUBLIC_FIELDS = "username name avatar isOnline lastSeen followers";
@@ -23,8 +23,7 @@ const getFollowers = async (req, res) => {
     if (!user) return res.status(404).json(errorResponse("USER_NOT_FOUND"));
     res.json(user.followers.map(withFollowersCount));
   } catch (err) {
-    console.error(err);
-    res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
+    reportError(err, res);
   }
 };
 
@@ -37,8 +36,7 @@ const getFollowing = async (req, res) => {
     if (!user) return res.status(404).json(errorResponse("USER_NOT_FOUND"));
     res.json(user.following.map(withFollowersCount));
   } catch (err) {
-    console.error(err);
-    res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
+    reportError(err, res);
   }
 };
 
@@ -73,8 +71,7 @@ const followUser = async (req, res) => {
 
     res.json({ message: "Now following" });
   } catch (err) {
-    console.error(err);
-    res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
+    reportError(err, res);
   }
 };
 
@@ -103,8 +100,7 @@ const unfollowUser = async (req, res) => {
 
     res.json({ message: "Unfollowed" });
   } catch (err) {
-    console.error(err);
-    res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
+    reportError(err, res);
   }
 };
 
@@ -135,8 +131,7 @@ const removeFollower = async (req, res) => {
 
     res.json({ message: "Follower removed" });
   } catch (err) {
-    console.error(err);
-    res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
+    reportError(err, res);
   }
 };
 

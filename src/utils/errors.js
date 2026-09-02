@@ -46,4 +46,20 @@ const errorResponse = (errorName) => ({
   type: errorName,
 });
 
-module.exports = { ERROR_CODES, errorResponse };
+const reportError = (err, res) => {
+  console.error(err);
+
+  if (err.name === "ValidationError") {
+    return res
+      .status(400)
+      .json({ ...errorResponse("INVALID_REQUEST"), message: err.message });
+  }
+
+  if (err.name === "CastError") {
+    return res.status(400).json(errorResponse("INVALID_REQUEST"));
+  }
+
+  res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
+};
+
+module.exports = { ERROR_CODES, errorResponse, reportError };
