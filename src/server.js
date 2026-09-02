@@ -2,6 +2,8 @@ require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const helmet = require("helmet");
+const { apiLimiter } = require("./middleware/rateLimiter");
 
 const authRouter = require("./modules/auth/authRouter");
 const breedsRouter = require("./modules/breeds/breedsRouter");
@@ -29,8 +31,10 @@ const io = require("socket.io")(http, {
 
 setSocketIO(io);
 
+app.use(helmet());
 app.use(cors());
 app.use(express.json());
+app.use(apiLimiter);
 app.use(authRouter);
 app.use("/breeds", breedsRouter);
 app.use("/countries", countriesRouter);
