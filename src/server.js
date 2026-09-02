@@ -48,7 +48,7 @@ app.use(notificationRouter);
 
 setupSockets(io);
 
-app.use((err, req, res, next) => {
+app.use((err, req, res, _next) => {
   console.error(err);
   res.status(500).json(errorResponse("INTERNAL_SERVER_ERROR"));
 });
